@@ -47,57 +47,64 @@ Fa.UI.ModelsCombo = function(modelsGrid) {
 		itemSelector : 'div.combo-item',
 		listeners : {
 			'select' : function(combo, record, index) {
-				modelsGrid.updateData(modelsGrid, record.data.url);
+				modelsGrid.updateData(record.get('name'), record.get('url'));
 			}
 		}
 	});
 }
 
-Fa.UI.Grid = function() {
-	return {
-		xtype : 'dyneditorgrid',
-		storeUrl : '/store_url',
-		storeAutoLoad : false,
-		storeRestful : true,
-		autoHeight: true,
-		autoScroll: true,
-		title:'hi',
-		id:'models-grid',
-		rowNumberer : false,
-		checkboxSelModel : true,
-		sm : new Ext.grid.CheckboxSelectionModel({
-			singleSelect : true,
+Fa.UI.Grid = Ext.extend(Ext.ux.DynamicEditorGridPanel, {
+	initComponent: function() {
+		var config = { 
+			storeUrl : '/store_url',
+			storeAutoLoad : false,
+			storeRestful : true,
+			autoHeight: true,
+			autoScroll: true,
+			title: 'Models',
+			rowNumberer : false,
+			checkboxSelModel : true,
+			sm : new Ext.grid.CheckboxSelectionModel({
+				singleSelect : true,
+				listeners : {
+					selectionchange : function(sm) {
+						this.grid.openButton.setDisabled(!sm.hasSelection());
+					}
+				}
+			}),
 			listeners : {
-				selectionchange : function(sm) {
-					this.grid.openButton.setDisabled(!sm.hasSelection());
+				rowdblclick : function(grid, index, e) {
+					var sm = grid.getSelectionModel();
+					if (sm.hasSelection()) {
+						var record = sm.getSelected();
+					}
 				}
-			}
-		}),
-		listeners : {
-			rowdblclick : function(grid, index, e) {
-				var sm = grid.getSelectionModel();
-				if (sm.hasSelection()) {
-					var record = sm.getSelected();
+			},
+			tbar : [{
+				iconCls : 'silk-arrow-refresh',
+				tooltip : 'Refresh data',
+				text: 'Refresh',
+				handler : function(btn, ev) {
+					var grid = btn.ownerCt.ownerCt;
+					grid.getStore().reload();
 				}
-			}
-		},
-		tbar : [{
-			iconCls : 'silk-arrow-refresh',
-			tooltip : 'Rafraichir',
-			handler : function(btn, ev) {
-				var grid = btn.ownerCt.ownerCt;
-				grid.getStore().reload();
-			}
-		} ],
-		view : new Ext.grid.GroupingView({
-			hideGroupedColumn : false,
-			forceFit : true,
-			groupTextTpl : '{text} ({[values.rs.length]} {[values.rs.length > 1 ? "éléments" : "élement"]})'
-		}),
-		updateData: function(grid, url) {
-			grid.getStore().proxy.setUrl(url, true);
-            grid.getStore().load();
-		}
-
-	};
-};
+			} ],
+			view : new Ext.grid.GroupingView({
+				hideGroupedColumn : false,
+				forceFit : true,
+				groupTextTpl : '{text} ({[values.rs.length]} {[values.rs.length > 1 ? "éléments" : "élement"]})'
+			})
+		};
+		
+        Ext.apply(this, config);
+        Ext.apply(this.initialConfig, config);
+        Fa.UI.Grid.superclass.initComponent.apply(this, arguments);
+	},
+	updateData: function(title, url) {
+		this.setTitle(title);
+		this.getStore().proxy.setUrl(url, true);
+        this.getStore().load();
+	}
+	
+});
+Ext.reg('modelsgrid', Fa.UI.Grid); 

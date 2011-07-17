@@ -1,7 +1,9 @@
 Ext.onReady(function() {
 	Ext.QuickTips.init();
 
-	var modelsGrid = Ext.ComponentMgr.create(Fa.UI.Grid());
+	var modelsGrid = Ext.ComponentMgr.create({
+		xtype: 'modelsgrid'
+	})
 	
 	var mainPanel = new Ext.Viewport({
 		id : 'main-viewport',
@@ -11,20 +13,14 @@ Ext.onReady(function() {
 		defaults : {
 			autoScroll : true
 		},
-		items : [ {
-			region : 'north',
-			xtype : 'panel',
-			border : false,
-			html : 'north',
-			bodyStyle : 'height:70px;'
-		}, {
+		items : [{
 			xtype : 'panel',
 			layout : 'card',
 			id : 'main-tabpanel',
 			region : 'center',
 			activeItem : 0,
 			border : false,
-			tbar:[Fa.UI.ModelsCombo(modelsGrid)],
+			tbar:['->', Fa.UI.ModelsCombo(modelsGrid)],
 			items : [modelsGrid]
 		} ],
 		listeners : {
